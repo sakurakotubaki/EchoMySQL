@@ -50,10 +50,8 @@ func main() {
 	e.Start(":8080")
 }
 
-// getGreetは、/helloのURLにアクセスした際にHello GolangというHTMLを返します。
 func getGreet(c echo.Context) error {
-	html := "<html><body><h1>Hello Golang</h1></body></html>"
-	return c.HTML(http.StatusOK, html)
+	return c.File("index.html")
 }
 
 // MySQLにデータを追加
