@@ -8,11 +8,13 @@ import (
 	"github.com/labstack/echo/v4"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
+
 // ShoppingItemは、買い物リストの構造体です。
 type ShoppingItem struct {
 	gorm.Model
 	Name string `json:"name"`
 }
+
 // DBは、データベースのインスタンスです。
 var DB *gorm.DB
 
@@ -32,14 +34,26 @@ func init() {
 func main() {
 	// Echoのインスタンス作成
 	e := echo.New()
-  // ミドルウェアの設定
+
+	// カスタムエラーハンドラの設定
+	e.HTTPErrorHandler = customHTTPErrorHandler
+
+	// ミドルウェアの設定
 	e.POST("/shopping", createItem)
 	e.GET("/shopping", getAllItems) // Add this line
 	e.GET("/shopping/:id", getItem)
 	e.PUT("/shopping/:id", updateItem)
 	e.DELETE("/shopping/:id", deleteItem)
-  // サーバー起動
+	// /helloのURLにアクセスしたら、Hello GolangというHTMLを返す
+	e.GET("/hello", getGreet)
+	// サーバー起動
 	e.Start(":8080")
+}
+
+// getGreetは、/helloのURLにアクセスした際にHello GolangというHTMLを返します。
+func getGreet(c echo.Context) error {
+	html := "<html><body><h1>Hello Golang</h1></body></html>"
+	return c.HTML(http.StatusOK, html)
 }
 
 // MySQLにデータを追加
@@ -90,4 +104,28 @@ func deleteItem(c echo.Context) error {
 	DB.First(&item, id)
 	DB.Delete(item)
 	return c.NoContent(http.StatusNoContent)
+}
+
+// カスタムエラーハンドラ
+func customHTTPErrorHandler(err error, c echo.Context) {
+	code := http.StatusInternalServerError
+	message := http.StatusText(code)
+
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+		message = he.Message.(string)
+	}
+
+	if code == http.StatusNotFound {
+		// 404エラーの場合は404.htmlを返す
+		c.File("404.html")
+		return
+	}
+
+	c.JSON(code, map[string]interface{}{
+		"error": map[string]interface{}{
+			"code":    code,
+			"message": message,
+		},
+	})
 }
