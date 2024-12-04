@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/jinzhu/gorm"
-	"github.com/labstack/echo/v4"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/labstack/echo/v4"
 )
 
 // ShoppingItemは、買い物リストの構造体です。
@@ -21,10 +21,10 @@ var DB *gorm.DB
 // initは、データベースの初期化を行います。
 func init() {
 	// DBの初期化
-	db, err := gorm.Open("mysql", "root:1234@/MyData?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open("mysql", "jboy:1234qw@tcp(localhost:3306)/myapp?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		// エラー処理
-		panic("failed to connect database")
+		panic(err.Error()) // エラーメッセージを表示するように修正
 	}
 	// マイグレーション
 	db.AutoMigrate(&ShoppingItem{})
